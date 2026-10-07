@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
+    <title>Phiếu điều tra phổ cập giáo dục - Xóa mù chữ</title>
+
+    <!-- Bootstrap -->
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+        rel="stylesheet">
+
+    <!-- CSS của project -->
+    <link
+        rel="stylesheet"
+        href="style.css">
+</head>
+
+<body>
+
+<div class="container-fluid py-3 py-md-4">
+
+    <!-- ================================================= -->
+    <!-- TIÊU ĐỀ -->
+    <!-- ================================================= -->
+
+    <div class="text-center mb-4">
+
+        <h1 class="page-title">
+            PHIẾU ĐIỀU TRA PHỔ CẬP GIÁO DỤC - XÓA MÙ CHỮ
+        </h1>
+
+        <p class="text-muted mb-0">
+            Nhập thông tin hộ gia đình và các thành viên
+        </p>
+
+    </div>
+
+    <details class="card form-card lookup-panel mb-4" id="lookupCard">
+        <summary class="card-header section-header">Tra cứu / sửa phiếu đã lưu <span>Dành cho người quản lý</span></summary>
+        <div class="card-body">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label for="lookupSoPhieu" class="form-label">Số phiếu cần tra cứu</label>
+                    <input type="text" id="lookupSoPhieu" class="form-control" autocomplete="off" placeholder="Nhập số phiếu">
+                </div>
+                <div class="col-md-4">
+                    <label for="lookupPin" class="form-label">Mã quản lý</label>
+                    <input type="password" id="lookupPin" class="form-control" autocomplete="off" placeholder="Mã do người quản lý cấp">
+                </div>
+                <div class="col-md-4">
+                    <button type="button" id="btnTimPhieu" class="btn btn-outline-primary w-100">TRA CỨU PHIẾU</button>
+                </div>
+            </div>
+            <p id="lookupStatus" class="small text-muted mt-3 mb-0" role="status">Chỉ người có mã quản lý mới tra cứu và sửa được phiếu.</p>
+        </div>
+    </details>
+
+
+    <!-- ================================================= -->
+    <!-- THÔNG TIN CHUNG CỦA PHIẾU -->
+    <!-- ================================================= -->
+
+    <div class="card form-card mb-4">
+
+        <div class="card-header section-header">
+            <span>1. THÔNG TIN CHUNG CỦA HỘ</span>
+        </div>
+
+        <div class="card-body">
+
+            <div class="row g-3">
+
+                <!-- Số phiếu -->
+
+                <div class="col-md-3">
+
+                    <label
+                        for="soPhieu"
+                        class="form-label">
+
+                        Số phiếu
+
+                    </label>
+
+                    <input
+                        type="text"
+                        id="soPhieu"
+                        class="form-control"
+                        placeholder="Tự động">
+
+                </div>
+
+
+                <!-- Phường -->
+
+                <div class="col-md-3">
+
+                    <label
+                        for="phuong"
+                        class="form-label required">
+
+                        Phường / Xã
+
+                    </label>
+
+                    <select
+                        id="phuong"
+                        class="form-select">
+
+                        <option value="">
+                            -- Chọn phường / xã --
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <!-- TDP -->
+
+                <div class="col-md-3">
+
+                    <label
+                        for="toDanPho"
+                        class="form-label">
+
+                        Tổ dân phố / Thôn
+
+                    </label>
+
+                    <input
+                        type="text"
+                        id="toDanPho"
+                        class="form-control"
+                        placeholder="Nhập TDP / Thôn">
+
+                </div>
+
+                <div class="col-md-3">
+                    <label for="toNhom" class="form-label">Tổ</label>
+                    <input type="text" id="toNhom" class="form-control" placeholder="Số / tên tổ">
+                </div>
+
+
+                <!-- Số nhà -->
+
+                <div class="col-md-6">
+
+                    <label
+                        for="soNha"
+                        class="form-label">
+
+                        Số nhà / Địa chỉ
+
+                    </label>
+
+                    <input
+                        type="text"
+                        id="soNha"
+                        class="form-control"
+                        placeholder="Số nhà, đường...">
+
+                </div>
+
+
+                <!-- Họ tên chủ hộ -->
+
+                <div class="col-md-6">
+
+                    <label
+                        for="chuHo"
+                        class="form-label required">
+
+                        Họ và tên chủ hộ
+
+                    </label>
+
+                    <input
+                        type="text"
+                        id="chuHo"
+                        class="form-control"
+                        placeholder="Nhập họ và tên chủ hộ">
+
+                </div>
+
+
+                <!-- Diện cư trú -->
+
+                <div class="col-md-4">
+
+                    <label
+                        for="dienCuTru"
+                        class="form-label">
+
+                        Diện cư trú
+
+                    </label>
+
+                    <select
+                        id="dienCuTru"
+                        class="form-select">
+
+                        <option value="">
+                            -- Chọn --
+                        </option>
+
+                        <option value="Thường trú">
+                            Thường trú
+                        </option>
+
+                        <option value="Tạm trú">
+                            Tạm trú
+                        </option>
+
+                        <option value="Khác">
+                            Khác
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <!-- Điện thoại -->
+
+                <div class="col-md-4">
+
+                    <label
+                        for="dienThoai"
+                        class="form-label">
+
+                        Điện thoại
+
+                    </label>
+
+                    <input
+                        type="tel"
+                        id="dienThoai"
+                        class="form-control"
+                        placeholder="Số điện thoại">
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- ================================================= -->
+    <!-- DANH SÁCH THÀNH VIÊN -->
+    <!-- ================================================= -->
+
+    <div class="card form-card mb-4">
+
+        <div class="card-header section-header d-flex justify-content-between align-items-center">
+
+            <span>
+                2. DANH SÁCH THÀNH VIÊN TRONG HỘ
+            </span>
+
+            <button
+                type="button"
+                id="btnThemThanhVien"
+                class="btn btn-light btn-sm">
+
+                + Thêm thành viên
+
+            </button>
+
+        </div>
+
+
+        <div class="card-body">
+
+            <div id="memberList">
+
+                <!-- Thành viên sẽ được JavaScript tạo tại đây -->
+
+            </div>
+
+
+            <!-- Nút thêm ở cuối danh sách -->
+
+            <div class="text-center mt-3">
+
+                <button
+                    type="button"
+                    id="btnThemThanhVienBottom"
+                    class="btn btn-outline-primary">
+
+                    + THÊM THÀNH VIÊN
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- ================================================= -->
+    <!-- THÔNG TIN CUỐI PHIẾU -->
+    <!-- ================================================= -->
+
+    <div class="card form-card mb-4">
+
+        <div class="card-header section-header">
+
+            3. THÔNG TIN XÁC NHẬN
+
+        </div>
+
+
+        <div class="card-body">
+
+            <div class="row g-3">
+
+                <!-- Cán bộ điều tra -->
+
+                <div class="col-md-4">
+
+                    <label
+                        for="canBoDieuTra"
+                        class="form-label">
+
+                        Cán bộ / nhân viên điều tra
+
+                    </label>
+
+                    <input
+                        type="text"
+                        id="canBoDieuTra"
+                        class="form-control">
+
+                </div>
+
+                <div class="col-md-4">
+                    <label for="canBoDieuTra2" class="form-label">Cán bộ / nhân viên điều tra 2</label>
+                    <input type="text" id="canBoDieuTra2" class="form-control">
+                </div>
+
+                <div class="col-md-4">
+                    <label for="canBoDieuTra3" class="form-label">Cán bộ / nhân viên điều tra 3</label>
+                    <input type="text" id="canBoDieuTra3" class="form-control">
+                </div>
+
+
+                <!-- Trưởng thôn -->
+
+                <div class="col-md-4">
+
+                    <label
+                        for="truongThon"
+                        class="form-label">
+
+                        Trưởng thôn / Tổ trưởng dân phố
+
+                    </label>
+
+                    <input
+                        type="text"
+                        id="truongThon"
+                        class="form-control">
+
+                </div>
+
+
+                <!-- Chủ hộ xác nhận -->
+
+                <div class="col-md-4">
+
+                    <label
+                        for="chuHoXacNhan"
+                        class="form-label">
+
+                        Chủ hộ gia đình
+
+                    </label>
+
+                    <input
+                        type="text"
+                        id="chuHoXacNhan"
+                        class="form-control">
+
+                </div>
+
+                <div class="col-md-4">
+                    <label for="ngayXacNhan" class="form-label">Ngày ký / xác nhận</label>
+                    <input type="date" id="ngayXacNhan" class="form-control">
+                </div>
+
+
+                <!-- Ghi chú -->
+
+                <div class="col-12">
+
+                    <label
+                        for="ghiChu"
+                        class="form-label">
+
+                        Ghi chú
+
+                    </label>
+
+                    <textarea
+                        id="ghiChu"
+                        class="form-control"
+                        rows="3"
+                        placeholder="Thông tin bổ sung nếu có..."></textarea>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- ================================================= -->
+    <!-- NÚT CHỨC NĂNG -->
+    <!-- ================================================= -->
+
+    <div class="action-area text-center mb-5">
+
+        <button
+            type="button"
+            id="btnLuu"
+            class="btn btn-primary btn-lg px-5">
+
+            LƯU PHIẾU
+
+        </button>
+
+        <button
+            type="button"
+            id="btnInPhieu"
+            class="btn btn-outline-primary btn-lg">
+
+            IN PHIẾU
+
+        </button>
+
+
+        <button
+            type="button"
+            id="btnLamMoi"
+            class="btn btn-outline-secondary btn-lg ms-2">
+
+            LÀM MỚI
+
+        </button>
+
+    </div>
+
+</div>
+
+
+<!-- Nội dung dựng riêng cho bản in -->
+<div id="printPages" aria-hidden="true"></div>
+
+
+
+<!-- ================================================= -->
+<!-- MODAL THÔNG BÁO -->
+<!-- ================================================= -->
+
+<div
+    class="modal fade"
+    id="messageModal"
+    tabindex="-1"
+    aria-hidden="true">
+
+    <div class="modal-dialog modal-dialog-centered">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+
+                <h5
+                    class="modal-title"
+                    id="messageTitle">
+
+                    Thông báo
+
+                </h5>
+
+                <button
+                    type="button"
+                    class="btn-close"
+                    data-bs-dismiss="modal">
+                </button>
+
+            </div>
+
+            <div
+                class="modal-body"
+                id="messageBody">
+
+            </div>
+
+            <div class="modal-footer">
+
+                <button
+                    type="button"
+                    class="btn btn-primary"
+                    data-bs-dismiss="modal">
+
+                    Đóng
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
+<!-- ================================================= -->
+<!-- BOOTSTRAP JS -->
+<!-- ================================================= -->
+
+<script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js">
+</script>
+
+
+<!-- ================================================= -->
+<!-- JAVASCRIPT PROJECT -->
+<!-- ================================================= -->
+
+<script src="js/address.js"></script>
+<script src="js/api.js"></script>
+<script src="js/app.js"></script>
+
+</body>
+
+</html>
+
+
