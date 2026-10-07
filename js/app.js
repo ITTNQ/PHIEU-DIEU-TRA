@@ -15,8 +15,8 @@
     const STORAGE_KEY = "phieuDieuTraPhoCap:v1";
 
     const householdFieldIds = [
-        "soPhieu", "tinhThanh", "phuong", "toDanPho", "soNha", "chuHo",
-        "dienCuTru", "dienThoai", "canBoDieuTra", "truongThon",
+        "soPhieu", "tinhThanh", "phuong", "toDanPho", "toNhom", "soNha", "chuHo",
+        "dienCuTru", "dienThoai", "canBoDieuTra", "canBoDieuTra2", "canBoDieuTra3", "truongThon",
         "chuHoXacNhan", "ghiChu", "ngayXacNhan"
     ];
 
@@ -119,6 +119,84 @@
         return fields;
     }
 
+    function readStudyHistory(card) {
+        return [...card.querySelectorAll(".study-history-row")].map((row) => ({
+            namHoc: row.querySelector('[data-study-field="namHoc"]').value.trim(),
+            lopDangHoc: row.querySelector('[data-study-field="lopDangHoc"]').value.trim(),
+            truongDangHoc: row.querySelector('[data-study-field="truongDangHoc"]').value.trim()
+        })).filter((record) => record.namHoc || record.lopDangHoc || record.truongDangHoc).slice(0, 5);
+    }
+
+    function addStudyHistoryRow(list, data) {
+        if (list.querySelectorAll(".study-history-row").length >= 5) return;
+        const row = document.createElement("div");
+        row.className = "study-history-row";
+        const createInput = (field, placeholder, label) => {
+            const input = document.createElement("input");
+            input.type = "text";
+            input.className = "form-control";
+            input.dataset.studyField = field;
+            input.placeholder = placeholder;
+            input.value = data?.[field] || "";
+            input.setAttribute("aria-label", label);
+            return input;
+        };
+        row.append(
+            createInput("namHoc", "20…–20…", "Năm học"),
+            createInput("lopDangHoc", "Lớp", "Lớp theo năm học"),
+            createInput("truongDangHoc", "Trường", "Trường theo năm học")
+        );
+        const remove = document.createElement("button");
+        remove.type = "button";
+        remove.className = "btn btn-outline-secondary btn-sm study-history-remove";
+        remove.dataset.action = "remove-study-year";
+        remove.textContent = "Xóa";
+        remove.setAttribute("aria-label", "Xóa dòng năm học");
+        row.appendChild(remove);
+        list.appendChild(row);
+        refreshStudyHistoryEditor(list);
+    }
+
+    function refreshStudyHistoryEditor(list) {
+        const rows = [...list.querySelectorAll(".study-history-row")];
+        rows.forEach((row) => {
+            const remove = row.querySelector('[data-action="remove-study-year"]');
+            if (remove) remove.disabled = rows.length <= 1;
+        });
+        const add = list.querySelector('[data-action="add-study-year"]');
+        if (add) {
+            add.disabled = rows.length >= 5;
+            add.textContent = rows.length >= 5 ? "Đã đủ 5 năm học" : "+ Thêm năm học";
+        }
+    }
+
+    function addStudyHistoryEditor(container, initialData) {
+        const editor = document.createElement("div");
+        editor.className = "col-12 study-history-editor";
+        const labels = document.createElement("div");
+        labels.className = "study-history-labels";
+        labels.innerHTML = "<span>Năm học</span><span>Lớp</span><span>Trường tương ứng</span><span></span>";
+        const list = document.createElement("div");
+        list.className = "study-history-list";
+        let savedHistory = [];
+        if (Array.isArray(initialData?.quaTrinhHoc)) savedHistory = initialData.quaTrinhHoc;
+        else if (initialData?.quaTrinhHoc) {
+            try { savedHistory = JSON.parse(initialData.quaTrinhHoc); } catch (_) { savedHistory = []; }
+        }
+        if (!Array.isArray(savedHistory) || !savedHistory.length) {
+            savedHistory = [{ lopDangHoc: initialData?.lopDangHoc || "", truongDangHoc: initialData?.truongDangHoc || "" }];
+        }
+        savedHistory.slice(0, 5).forEach((record) => addStudyHistoryRow(list, record));
+        const add = document.createElement("button");
+        add.type = "button";
+        add.className = "btn btn-outline-primary btn-sm mt-2";
+        add.dataset.action = "add-study-year";
+        add.addEventListener("click", () => addStudyHistoryRow(list));
+        editor.append(labels, list, add);
+        container.appendChild(editor);
+        refreshStudyHistoryEditor(list);
+    }
+
     function addMember(initialData) {
         const id = nextMemberId++;
         const card = document.createElement("section");
@@ -153,10 +231,11 @@
             ["Cha/Mẹ", "Cha / Mẹ"], ["Ông/Bà", "Ông / Bà"], ["Anh/Chị/Em", "Anh / Chị / Em"], ["Khác", "Khác"]
         ], null, "col-md-4");
         addField(personalFields, "Cha, mẹ hoặc người đỡ đầu", "nguoiDoDau", "text", null, null, "col-md-8");
+        addField(personalFields, "Dân tộc", "danToc", "text", null, null, "col-md-6");
+        addField(personalFields, "Tôn giáo", "tonGiao", "text", null, null, "col-md-6");
 
         const currentStudyFields = addMemberSection(fields, "2. Học tập hiện tại", "Điền lớp và trường đang học ở thời điểm điều tra.");
-        addField(currentStudyFields, "Lớp đang học", "lopDangHoc", "text", null, null, "col-md-4");
-        addField(currentStudyFields, "Trường đang học", "truongDangHoc", "text", null, null, "col-md-8");
+        addStudyHistoryEditor(currentStudyFields, initialData);
 
         const completionFields = addMemberSection(fields, "3. Kết quả học tập đã hoàn thành", "Các mục không áp dụng có thể để trống.");
         addField(completionFields, "Cấp học cao nhất đã hoàn thành", "trinhDo", "select", [
@@ -178,6 +257,7 @@
         addField(statusFields, "Biết chữ", "bietChu", "select", [["Có", "Có"], ["Không", "Không"]], null, "col-md-4");
         addField(statusFields, "Đã bỏ học", "boHoc", "select", [["Không", "Không"], ["Có", "Có"]], null, "col-md-4");
         addField(statusFields, "Năm bỏ học (nếu có)", "namBoHoc", "number", null, "Ví dụ: 2025", "col-md-4");
+        addField(statusFields, "Lớp / kỳ học khi bỏ học", "lopBoHoc", "text", null, null, "col-md-4");
         addField(statusFields, "Khuyết tật", "khuyetTat", "select", [["Không", "Không"], ["Có", "Có"]], null, "col-md-4");
         addField(statusFields, "Dạng khuyết tật / ghi rõ", "dangKhuyetTat", "text", null, null, "col-md-4");
 
@@ -228,6 +308,10 @@
             card.querySelectorAll("[data-field]").forEach((field) => {
                 member[field.dataset.field] = field.value.trim();
             });
+            const history = readStudyHistory(card);
+            member.quaTrinhHoc = JSON.stringify(history);
+            member.lopDangHoc = history[0]?.lopDangHoc || "";
+            member.truongDangHoc = history[0]?.truongDangHoc || "";
             return member;
         });
         return {
@@ -303,56 +387,113 @@
         return `${day}/${month}/${year}`;
     }
 
-    function printTable(members, start, count) {
-        const joined = (...values) => values.filter(Boolean).join(" / ");
-        const rows = Array.from({ length: count }, (_, offset) => {
-            const member = members[start + offset];
-            if (!member) return `<tr><td>${start + offset + 1}</td>${"<td></td>".repeat(15)}</tr>`;
-            return `<tr><td>${member.stt}</td><td class="print-name">${escapeHtml(member.hoTen)}</td>
-                <td>${escapeHtml(member.quanHe)}</td><td>${escapeHtml(member.ngaySinh)}</td><td>${escapeHtml(member.gioiTinh)}</td>
-                <td>${escapeHtml(member.nguoiDoDau)}</td><td>${escapeHtml(member.lopDangHoc)}</td><td>${escapeHtml(member.truongDangHoc)}</td>
-                <td>${escapeHtml(joined(member.trinhDo, member.boTuc === "Có" ? "Bổ túc" : "", member.namTotNghiep))}</td>
-                <td>${escapeHtml(joined(member.ngheBac, member.ngheNam))}</td>
-                <td>${escapeHtml(joined(member.lopXoaMuChu, member.namXoaMuChu))}</td>
-                <td>${escapeHtml(joined(member.tinhTrangHoc, member.boHoc === "Có" ? `Bỏ học ${member.namBoHoc || ""}` : ""))}</td>
-                <td>${escapeHtml(member.bietChu)}</td><td>${escapeHtml(joined(member.khuyetTat, member.dangKhuyetTat))}</td>
-                <td>${escapeHtml(joined(member.bienDong, member.ngayBienDong, member.noiBienDong))}</td>
-                <td>${escapeHtml(member.ghiChuThanhVien)}</td></tr>`;
-        }).join("");
-        return `<table class="print-members"><thead><tr>
-            <th>STT</th><th>Họ và tên đối tượng<br><small>(lớn tuổi ghi trước)</small></th><th>Quan hệ<br>với chủ hộ</th>
-            <th>Ngày sinh</th><th>Giới tính</th><th>Cha, mẹ / người đỡ đầu</th><th>Lớp đang học</th><th>Trường đang học</th>
-            <th>Tốt nghiệp MN–THPT<br><small>Cấp học / bổ túc / năm</small></th><th>Tốt nghiệp nghề<br><small>Bậc / năm</small></th>
-            <th>Học xong xóa mù chữ<br><small>Lớp hoặc kỳ / năm</small></th><th>Tình trạng / bỏ học</th>
-            <th>Biết chữ</th><th>Khuyết tật</th><th>Chuyển đến / đi, chết</th><th>Ghi chú</th>
-            </tr></thead><tbody>${rows}</tbody></table>`;
+    function printTableHeader() {
+        return `<table class="print-members">
+            <colgroup><col class="c-stt"><col class="c-person"><col class="c-year"><col class="c-class"><col class="c-school">
+                <col class="c-level"><col class="c-supplement"><col class="c-year-grad"><col class="c-vocational"><col class="c-year-voc">
+                <col class="c-xmc"><col class="c-year-xmc"><col class="c-dropout"><col class="c-year-dropout"><col class="c-disability"><col class="c-movement"><col class="c-notes"></colgroup>
+            <thead>
+                <tr><th rowspan="3">STT</th><th rowspan="3">HỌ VÀ TÊN ĐỐI TƯỢNG<br><small>(Lớn tuổi ghi trước)</small></th>
+                    <th colspan="2" rowspan="3">TÊN LỚP ĐANG HỌC<br><small>(Theo năm học)</small></th><th rowspan="3">TÊN TRƯỜNG ĐANG HỌC<br><small>(Tương ứng với từng năm học)</small></th>
+                    <th colspan="5">Thông tin Tốt nghiệp<br>(Hoàn thành)</th><th colspan="2" rowspan="2">Học xong</th><th colspan="2" rowspan="2">Bỏ học</th>
+                    <th rowspan="3">Khuyết tật</th><th rowspan="3">Chuyển đến,<br>chuyển đi,<br>chết</th><th rowspan="3">Ghi chú</th></tr>
+                <tr><th colspan="3">MN -&gt; THPT</th><th colspan="2">TN nghề</th></tr>
+                <tr><th>Cấp học</th><th>Bổ túc</th><th>Năm</th><th>Bậc</th><th>Năm</th>
+                    <th>Lớp hoặc kỳ học<br>(đối với xóa mù chữ)</th><th>Năm</th>
+                    <th>Lớp hoặc kỳ học<br>(đối với xóa mù chữ)</th><th>Năm</th></tr>
+            </thead><tbody>`;
+    }
+
+    function printMemberRows(member, index, rowStart, rowCount, continuation, suppressMergedData) {
+        const history = member?.quaTrinhHoc || [];
+        const get = (key) => member ? escapeHtml(member[key] || "") : "";
+        const genderText = member
+            ? `Nữ: ${member.gioiTinh === "Nữ" ? "☑" : "□"} &nbsp; Nam: ${member.gioiTinh === "Nam" ? "☑" : "□"} &nbsp; DT: ${get("danToc")} &nbsp; TG: ${get("tonGiao")}`
+            : "Nữ: □ &nbsp; Nam: □ &nbsp; DT: ______ &nbsp; TG: ______";
+        const learningStatus = member?.boHoc === "Có" ? get("lopBoHoc") || "Đã bỏ học" : "";
+        const movement = member ? [member.bienDong, displayDate(member.ngayBienDong), member.noiBienDong].filter(Boolean).map(escapeHtml).join("<br>") : "";
+        const notes = member ? [member.ghiChuThanhVien, member.bietChu ? `Biết chữ: ${member.bietChu}` : ""].filter(Boolean).map(escapeHtml).join("<br>") : "";
+        const rows = [];
+        for (let offset = 0; offset < rowCount; offset += 1) {
+            const line = rowStart + offset;
+            const record = history[line] || {};
+            let cells = "";
+            if (offset === 0) cells += `<td class="print-stt" rowspan="${rowCount}">${continuation ? "" : index}</td>`;
+            if (line === 0) {
+                cells += `<td class="print-person print-name">${get("hoTen")}</td>`;
+            } else if (line === 1) {
+                cells += `<td class="print-person">QH với chủ hộ: ${get("quanHe")}</td>`;
+            } else if (line === 2) {
+                cells += `<td class="print-person">Ngày sinh: ${escapeHtml(displayDate(member?.ngaySinh || ""))}</td>`;
+            } else if (line === 3) {
+                cells += `<td class="print-person">${genderText}</td>`;
+            } else {
+                cells += `<td class="print-person">Cha, mẹ, Người đỡ đầu: ${get("nguoiDoDau")}</td>`;
+            }
+            cells += `<td class="print-year">${escapeHtml(record.namHoc || "20…–20…")}</td><td>${escapeHtml(record.lopDangHoc || "")}</td><td>${escapeHtml(record.truongDangHoc || "")}</td>`;
+            if (offset === 0) {
+                const blankOnContinuation = suppressMergedData ? "" : null;
+                cells += `<td rowspan="${rowCount}">${blankOnContinuation ?? get("trinhDo")}</td><td rowspan="${rowCount}">${blankOnContinuation ?? get("boTuc")}</td><td rowspan="${rowCount}">${blankOnContinuation ?? get("namTotNghiep")}</td>
+                    <td rowspan="${rowCount}">${blankOnContinuation ?? get("ngheBac")}</td><td rowspan="${rowCount}">${blankOnContinuation ?? get("ngheNam")}</td>
+                    <td rowspan="${rowCount}">${blankOnContinuation ?? get("lopXoaMuChu")}</td><td rowspan="${rowCount}">${blankOnContinuation ?? get("namXoaMuChu")}</td>
+                    <td rowspan="${rowCount}">${blankOnContinuation ?? escapeHtml(learningStatus)}</td><td rowspan="${rowCount}">${blankOnContinuation ?? get("namBoHoc")}</td>
+                    <td rowspan="${rowCount}">${blankOnContinuation ?? escapeHtml([member?.khuyetTat, member?.dangKhuyetTat].filter(Boolean).join(" / "))}</td>
+                    <td rowspan="${rowCount}">${blankOnContinuation ?? movement}</td><td rowspan="${rowCount}">${blankOnContinuation ?? notes}</td>`;
+            }
+            rows.push(`<tr class="print-member-line">${cells}</tr>`);
+        }
+        return rows.join("");
+    }
+
+    function printMemberTable(members, slots, withHeader, rowHeightClass) {
+        let body = "";
+        for (const slot of slots) {
+            body += printMemberRows(members[slot.index] || null, slot.index + 1, slot.rowStart || 0, slot.rows, Boolean(slot.continuation), Boolean(slot.suppressMergedData));
+        }
+        return `${withHeader ? printTableHeader() : `<table class="print-members ${rowHeightClass || ""}"><colgroup><col class="c-stt"><col class="c-person"><col class="c-year"><col class="c-class"><col class="c-school"><col class="c-level"><col class="c-supplement"><col class="c-year-grad"><col class="c-vocational"><col class="c-year-voc"><col class="c-xmc"><col class="c-year-xmc"><col class="c-dropout"><col class="c-year-dropout"><col class="c-disability"><col class="c-movement"><col class="c-notes"></colgroup><tbody>`}${body}</tbody></table>`;
+    }
+
+    function printHouseholdHeader() {
+        return `<div class="print-page-number">1</div><table class="print-household-table"><colgroup><col><col><col></colgroup>
+            <tbody><tr><td>Phường (1): ${escapeHtml(householdDisplay("phuong"))}</td><th>PHIẾU ĐIỀU TRA PHỔ CẬP GIÁO DỤC - XÓA MÙ CHỮ</th><td>Số phiếu (5): <span class="print-form-number-value">${escapeHtml(householdDisplay("soPhieu"))}</span></td></tr>
+            <tr><td colspan="2">TDP (2): ${escapeHtml(householdDisplay("toDanPho"))} <span class="print-to">Tổ: ${escapeHtml(householdDisplay("toNhom"))}</span></td><td>Diện cư trú (6): ${escapeHtml(householdDisplay("dienCuTru"))}</td></tr>
+            <tr><td>Địa chỉ (3): ${escapeHtml(householdDisplay("soNha"))}</td><td>Họ và tên chủ hộ (4): ${escapeHtml(householdDisplay("chuHo"))}</td><td>Điện thoại (7): ${escapeHtml(householdDisplay("dienThoai"))}</td></tr></tbody></table>`;
+    }
+
+    function printSignatures() {
+        const dateText = displayDate(householdDisplay("ngayXacNhan")) || ".../.../ Năm 20...";
+        const signers = [
+            ["Cán bộ, nhân viên điều tra 1", householdDisplay("canBoDieuTra")],
+            ["Cán bộ, nhân viên điều tra 2", householdDisplay("canBoDieuTra2")],
+            ["Cán bộ, nhân viên điều tra 3", householdDisplay("canBoDieuTra3")],
+            ["Trưởng thôn, bản, tổ dân phố", householdDisplay("truongThon")],
+            ["Chủ hộ gia đình", householdDisplay("chuHoXacNhan") || householdDisplay("chuHo")]
+        ];
+        return `<table class="print-signatures"><colgroup><col class="signature-role-col"><col class="signature-date-col"><col class="signature-name-col"><col class="signature-ubnd-col"></colgroup>
+            <tbody><tr class="print-signature-head"><th>Họ, tên</th><th colspan="2"></th><td rowspan="${signers.length + 1}"><div class="print-ubnd"><b>XÁC NHẬN<br>CỦA UBND PHƯỜNG</b><span>(Ký tên, đóng dấu)</span><span>Ngày ... tháng ... năm ...</span></div></td></tr>
+            ${signers.map(([role, name]) => `<tr><th>${escapeHtml(role)}</th><td class="print-signature-date">${escapeHtml(dateText)}</td><td class="print-signature-name">${escapeHtml(name)}</td></tr>`).join("")}</tbody></table>`;
     }
 
     function buildPrintPages() {
         const pages = document.getElementById("printPages");
         if (!pages) return;
         const members = [...memberList.querySelectorAll(".member-card")].map((card, index) => {
-            const member = { stt: index + 1 };
+            const member = { thuTu: index + 1, quaTrinhHoc: readStudyHistory(card) };
             card.querySelectorAll("[data-field]").forEach((field) => { member[field.dataset.field] = field.value.trim(); });
             return member;
         });
-        const pageCount = Math.max(2, 1 + Math.ceil(Math.max(0, members.length - 3) / 4));
-        const household = (label, id) => `<div><b>${label}:</b> ${escapeHtml(householdDisplay(id))}</div>`;
-        let html = `<section class="print-sheet">
-            <header class="print-title"><strong>PHIẾU ĐIỀU TRA PHỔ CẬP GIÁO DỤC - XÓA MÙ CHỮ</strong><span>Trang 1/${pageCount}</span></header>
-            <div class="print-household">${household("Phường / Xã", "phuong")}${household("TDP", "toDanPho")}${household("Địa chỉ", "soNha")}
-                ${household("Chủ hộ", "chuHo")}${household("Số phiếu", "soPhieu")}${household("Diện cư trú", "dienCuTru")}${household("Điện thoại", "dienThoai")}</div>
-            ${printTable(members, 0, 3)}
-        </section>`;
-        for (let page = 1; page < pageCount; page += 1) {
-            const start = 3 + (page - 1) * 4;
-            const lastPage = page === pageCount - 1;
-            html += `<section class="print-sheet"><header class="print-title"><strong>PHIẾU ĐIỀU TRA PHỔ CẬP GIÁO DỤC - XÓA MÙ CHỮ <small>(tiếp theo)</small></strong><span>Trang ${page + 1}/${pageCount}</span></header>
-                ${printTable(members, start, 4)}${lastPage ? `<div class="print-signatures">
-                <div><b>Cán bộ, nhân viên điều tra</b><br><br><br>${escapeHtml(householdDisplay("canBoDieuTra"))}</div>
-                <div><b>Trưởng thôn, bản, tổ dân phố</b><br><br><br>${escapeHtml(householdDisplay("truongThon"))}</div>
-                <div><b>Chủ hộ gia đình</b><br><br><br>${escapeHtml(householdDisplay("chuHoXacNhan") || householdDisplay("chuHo"))}</div>
-                <div><b>Xác nhận của UBND phường</b><br><br><br>Ngày ${escapeHtml(displayDate(householdDisplay("ngayXacNhan") || "...... tháng ...... năm ........"))}</div></div>` : ""}</section>`;
+        const overflowPages = Math.ceil(Math.max(0, members.length - 7) / 4);
+        const pageCount = 2 + overflowPages;
+        const firstPageSlots = [{ index: 0, rows: 5 }, { index: 1, rows: 5 }, { index: 2, rows: 3 }];
+        const secondPageSlots = [{ index: 2, rowStart: 3, rows: 2, continuation: true, suppressMergedData: true },
+            { index: 3, rows: 5 }, { index: 4, rows: 5 }, { index: 5, rows: 5 }, { index: 6, rows: 5 }];
+        let html = `<section class="print-sheet print-page-one">${printHouseholdHeader()}${printMemberTable(members, firstPageSlots, true, "")}</section>`;
+        html += `<section class="print-sheet print-page-two"><div class="print-page-number">2</div>${printMemberTable(members, secondPageSlots, false, "print-continuation")}${pageCount === 2 ? printSignatures() : ""}</section>`;
+        for (let page = 2; page < pageCount; page += 1) {
+            const startIndex = 7 + (page - 2) * 4;
+            const last = page === pageCount - 1;
+            const slots = Array.from({ length: 4 }, (_, offset) => ({ index: startIndex + offset, rows: 5 }));
+            html += `<section class="print-sheet print-overflow-page"><div class="print-page-number">${page + 1}</div>${printMemberTable(members, slots, true, "print-continuation")}${last ? printSignatures() : ""}</section>`;
         }
         pages.innerHTML = html;
     }
@@ -504,7 +645,7 @@
     function resetForm() {
         const confirmed = window.confirm("Làm mới phiếu hiện tại? Dữ liệu đang nhập trên màn hình sẽ bị xóa.");
         if (!confirmed) return;
-        document.querySelectorAll("#soPhieu, #tinhThanh, #phuong, #toDanPho, #soNha, #chuHo, #dienCuTru, #dienThoai, #canBoDieuTra, #truongThon, #chuHoXacNhan, #ghiChu, #ngayXacNhan")
+        document.querySelectorAll("#soPhieu, #tinhThanh, #phuong, #toDanPho, #toNhom, #soNha, #chuHo, #dienCuTru, #dienThoai, #canBoDieuTra, #canBoDieuTra2, #canBoDieuTra3, #truongThon, #chuHoXacNhan, #ghiChu, #ngayXacNhan")
             .forEach((field) => { field.value = ""; field.classList.remove("is-invalid"); });
         memberList.replaceChildren();
         nextMemberId = 1;
@@ -524,6 +665,15 @@
     const printButton = document.getElementById("btnInPhieu");
     if (printButton) printButton.addEventListener("click", printForm);
     memberList.addEventListener("click", (event) => {
+        const removeYear = event.target.closest('[data-action="remove-study-year"]');
+        if (removeYear) {
+            const list = removeYear.closest(".study-history-list");
+            if (list && list.querySelectorAll(".study-history-row").length > 1) {
+                removeYear.closest(".study-history-row").remove();
+                refreshStudyHistoryEditor(list);
+            }
+            return;
+        }
         const button = event.target.closest('[data-action="remove-member"]');
         if (!button) return;
         const card = button.closest(".member-card");
