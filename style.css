@@ -207,6 +207,16 @@ button:focus-visible { outline: 3px solid rgba(23, 105, 210, .28); outline-offse
 .member-subsection-heading { margin: 0 0 12px; padding-bottom: 9px; border-bottom: 1px solid #e8edf4; }
 .member-subsection-heading h4 { margin: 0; color: #315a83; font-size: .93rem; font-weight: 800; }
 .member-subsection-heading p { margin: 4px 0 0; color: #6b7b8f; font-size: .8rem; }
+.study-history-labels, .study-history-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1.6fr auto;
+    align-items: center;
+    gap: 8px;
+}
+.study-history-labels { margin-bottom: 6px; color: #5c6d82; font-size: .8rem; font-weight: 700; }
+.study-history-row + .study-history-row { margin-top: 8px; }
+.study-history-row .form-control { min-height: 42px; }
+.study-history-remove { min-width: 64px; }
 #memberList .btn-danger, #memberList .btn-outline-danger {
     min-height: 35px;
     border-radius: 8px;
@@ -253,6 +263,10 @@ button:focus-visible { outline: 3px solid rgba(23, 105, 210, .28); outline-offse
     .member-card .card-header, .thanh-vien-card .card-header, .member-item .card-header { margin: -15px -15px 15px; padding: 12px 15px; }
     .member-input-section { padding: 12px; border-radius: 10px; }
     .member-subsection-heading { margin-bottom: 10px; }
+    .study-history-labels { display: none; }
+    .study-history-row { grid-template-columns: 1fr 1fr; }
+    .study-history-row input:nth-child(3), .study-history-remove { grid-column: 1 / -1; }
+    .study-history-remove { justify-self: end; }
     .action-area { display: grid; grid-template-columns: 1fr; gap: 10px; }
     .action-area .btn { width: 100%; }
     #btnThemThanhVien { flex: 0 0 auto; white-space: nowrap; }
@@ -271,63 +285,76 @@ button:focus-visible { outline: 3px solid rgba(23, 105, 210, .28); outline-offse
     *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
 }
 
-/* Printable household survey, based on the supplied two-page paper form. */
+/* Printable layout follows the supplied two-page paper form. */
 #printPages { display: none; }
 
-@page { size: A4 landscape; margin: 7mm; }
+@page { size: A4 landscape; margin: 5mm; }
 
 @media print {
-    html, body { width: 100%; min-height: 0; margin: 0 !important; padding: 0 !important; background: #fff !important; }
+    html, body { width: 100%; height: auto; margin: 0 !important; padding: 0 !important; background: #fff !important; }
     body { color: #111; font-family: "Times New Roman", serif; }
     body > :not(#printPages) { display: none !important; }
     #printPages { display: block !important; color: #111; }
     .print-sheet {
-        width: 100%; min-height: 196mm; page-break-after: always; break-after: page;
+        width: 100%; height: 200mm; page-break-after: always; break-after: page;
         overflow: hidden; page-break-inside: avoid; break-inside: avoid;
     }
     .print-sheet:last-child { page-break-after: auto; break-after: auto; }
-    .print-title {
-        display: flex; align-items: baseline; justify-content: space-between; gap: 8mm;
-        margin: 0 0 3mm; padding-bottom: 2mm; border-bottom: 1px solid #222;
-        text-align: center; font-size: 12pt; font-weight: 700;
-    }
-    .print-title strong { flex: 1; }
-    .print-title > span { white-space: nowrap; font-size: 8pt; font-weight: 400; }
-    .print-title small { font-size: 9pt; }
-    .print-household {
-        display: grid; grid-template-columns: 1.1fr .8fr 1.5fr 1.2fr;
-        gap: 1.5mm 4mm; margin: 0 0 3mm; padding: 2mm 2.5mm;
-        border: 1px solid #333; font-size: 8pt; line-height: 1.25;
-    }
-    .print-household b { font-weight: 700; }
-    .print-members { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 6.2pt; }
-    .print-members th, .print-members td { border: 1px solid #333; padding: 1.2mm 1mm; vertical-align: middle; overflow-wrap: anywhere; }
-    .print-members th { height: 17mm; text-align: center; font-weight: 700; line-height: 1.15; }
-    .print-members th small { font-size: 5.7pt; font-weight: 400; }
-    .print-members td { text-align: center; }
-    .print-members th:nth-child(1), .print-members td:nth-child(1) { width: 3%; }
-    .print-members th:nth-child(2), .print-members td:nth-child(2) { width: 11%; }
-    .print-members th:nth-child(3), .print-members td:nth-child(3) { width: 5%; }
-    .print-members th:nth-child(4), .print-members td:nth-child(4) { width: 6%; }
-    .print-members th:nth-child(5), .print-members td:nth-child(5) { width: 4%; }
-    .print-members th:nth-child(6), .print-members td:nth-child(6) { width: 8%; }
-    .print-members th:nth-child(7), .print-members td:nth-child(7) { width: 6%; }
-    .print-members th:nth-child(8), .print-members td:nth-child(8) { width: 8%; }
-    .print-members th:nth-child(9), .print-members td:nth-child(9) { width: 8%; }
-    .print-members th:nth-child(10), .print-members td:nth-child(10) { width: 6%; }
-    .print-members th:nth-child(11), .print-members td:nth-child(11) { width: 7%; }
-    .print-members th:nth-child(12), .print-members td:nth-child(12) { width: 7%; }
-    .print-members th:nth-child(13), .print-members td:nth-child(13) { width: 4%; }
-    .print-members th:nth-child(14), .print-members td:nth-child(14) { width: 5%; }
-    .print-members th:nth-child(15), .print-members td:nth-child(15) { width: 8%; }
-    .print-members th:nth-child(16), .print-members td:nth-child(16) { width: 4%; }
-    .print-members tbody tr { height: 28mm; }
-    .print-sheet:first-child .print-members tbody tr { height: 41mm; }
-    .print-members .print-name { text-align: left; font-weight: 700; }
+    .print-page-number { height: 5mm; text-align: center; font-size: 8pt; line-height: 5mm; }
+    .print-household-table, .print-members { width: 100%; border-collapse: collapse; table-layout: fixed; }
+    .print-household-table { height: 27mm; margin-bottom: 1mm; font-size: 8pt; line-height: 1.15; }
+    .print-household-table col:nth-child(1) { width: 30%; }
+    .print-household-table col:nth-child(2) { width: 55%; }
+    .print-household-table col:nth-child(3) { width: 15%; }
+    .print-household-table td, .print-household-table th { border: 1px solid #222; padding: 1.5mm 2mm; vertical-align: middle; }
+    .print-household-table th { text-align: center; font-size: 10pt; }
+    .print-form-number-value { color: transparent !important; }
+    .print-to { display: inline-block; margin-left: 18mm; }
+    .print-members { font-size: 6.4pt; line-height: 1.08; }
+    .print-members th, .print-members td { border: 1px solid #222; padding: .7mm .6mm; vertical-align: middle; overflow-wrap: anywhere; }
+    .print-members thead th { text-align: center; font-weight: 700; }
+    .print-members thead tr:nth-child(1) { height: 8mm; }
+    .print-members thead tr:nth-child(2) { height: 7mm; }
+    .print-members thead tr:nth-child(3) { height: 13mm; }
+    .print-members thead small { font-size: 5.8pt; font-weight: 400; }
+    .print-members .c-stt { width: 2%; }
+    .print-members .c-person { width: 18%; }
+    .print-members .c-year { width: 5%; }
+    .print-members .c-class { width: 6%; }
+    .print-members .c-school { width: 9%; }
+    .print-members .c-level { width: 4%; }
+    .print-members .c-supplement { width: 3%; }
+    .print-members .c-year-grad { width: 4%; }
+    .print-members .c-vocational { width: 4%; }
+    .print-members .c-year-voc { width: 4%; }
+    .print-members .c-xmc { width: 7%; }
+    .print-members .c-year-xmc { width: 4%; }
+    .print-members .c-dropout { width: 7%; }
+    .print-members .c-year-dropout { width: 4%; }
+    .print-members .c-disability { width: 5%; }
+    .print-members .c-movement { width: 8%; }
+    .print-members .c-notes { width: 6%; }
+    .print-page-one .print-member-line { height: 9.5mm; }
+    .print-page-two .print-member-line, .print-overflow-page .print-member-line { height: 6.3mm; }
+    .print-members .print-stt { text-align: center; font-weight: 700; font-size: 8pt; }
+    .print-members .print-person { text-align: left; padding-left: 1.5mm; }
+    .print-members .print-name { font-weight: 700; }
+    .print-members .print-year { text-align: center; white-space: nowrap; font-weight: 700; }
     .print-signatures {
-        display: grid; grid-template-columns: repeat(4, 1fr); gap: 4mm;
-        margin-top: 7mm; text-align: center; font-size: 8pt; line-height: 1.25;
+        width: 100%; height: 38mm; margin-top: 2mm; border-collapse: collapse;
+        table-layout: fixed; font-size: 6.7pt; line-height: 1.15; text-align: center;
     }
-    .print-signatures > div { min-height: 29mm; }
-    .print-signatures b { display: block; }
+    .print-signatures .signature-role-col { width: 34%; }
+    .print-signatures .signature-date-col { width: 22%; }
+    .print-signatures .signature-name-col { width: 26%; }
+    .print-signatures .signature-ubnd-col { width: 18%; }
+    .print-signatures th, .print-signatures td { border: 1px solid #222; padding: 1mm; vertical-align: middle; }
+    .print-signatures th { font-weight: 700; }
+    .print-signature-head { height: 5mm; }
+    .print-signature-head th:first-child { text-align: center; }
+    .print-signature-date { white-space: nowrap; font-weight: 700; }
+    .print-signature-name { height: 6mm; text-align: center; font-weight: 700; }
+    .print-ubnd { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2mm; }
+    .print-ubnd b { font-size: 7.5pt; }
+    .print-ubnd span:last-child { font-style: italic; }
 }
